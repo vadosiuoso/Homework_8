@@ -17,6 +17,7 @@ public class ClientService {
 
     //Чи є якийсь інший спосіб повернути айді без додаткового запиту?
     public long create(String name) {
+        validateName(name);
         String sql = "INSERT INTO client (name) VALUES (?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, name);
@@ -41,7 +42,14 @@ public class ClientService {
         return -1;
     }
 
+    private void validateName(String name){
+        if(name.isEmpty() || name.length() < 2){
+            throw new IllegalArgumentException("Name is empty or short");
+        }
+    }
+
     public void setName(long id, String name) {
+        validateName(name);
         try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE clients SET name = ? WHERE id = ?")) {
             preparedStatement.setString(1, name);
             preparedStatement.setLong(2, id);
@@ -60,7 +68,7 @@ public class ClientService {
                 return resultSet.getString("name");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("Client with this id not available");
         }
 
         return null;
@@ -71,7 +79,7 @@ public class ClientService {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("Client with this id not available");
         }
     }
 
